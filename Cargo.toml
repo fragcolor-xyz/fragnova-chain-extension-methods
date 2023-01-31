@@ -1,0 +1,36 @@
+[package]
+name = "fragnova_chain_extension_methods"
+description = "Definitions of all the Chain Extension Methods of the Fragnova Blockchain. Fragnova ink! smart contract developers should integrate these method definitons into the environment of their smart contracts (https://paritytech.github.io/ink/ink/attr.chain_extension.html#example-environment), if they wish to call these methods in their smart contracts."
+version = "0.1.0"
+authors = ["Fragcolor Pte. Ltd. <ask@fragcolor.com>"]
+edition = "2021"
+
+[dependencies]
+ink_env = { version = "3.3", default-features = false }
+ink_lang = { version = "3.3", default-features = false }
+ink_prelude = { version = "3.3", default-features = false }
+
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] } # this package is named "codec" when used in Fragnova (https://github.com/fragcolor-xyz/fragnova)
+scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+
+sp-fragnova = { version = '0.1.0', default-features = false, git = 'https://github.com/fragcolor-xyz/fragnova.git' }
+# We use this dependency to prevent the error "`#[global_allocator]` in ink_allocator conflicts with global allocator in: sp_io". This solution was found from https://substrate.stackexchange.com/questions/4733/error-when-compiling-a-contract-using-the-xcm-chain-extension
+sp-io = { version = '6.0.0', default-features = false, features = ["disable_panic_handler", "disable_oom", "disable_allocator"], git = 'https://github.com/fragcolor-xyz/substrate.git', tag = 'fragnova-v0.0.6' }
+
+[lib]
+name = "fragnova_chain_extension_methods"
+path = "src/lib.rs"
+crate-type = [
+	# Used for normal contract Wasm blobs.
+	"cdylib",
+]
+
+[features]
+default = ["std"]
+std = [
+	"ink_env/std",
+	"ink_prelude/std",
+	"scale/std",
+	"scale-info/std",
+	"sp-fragnova/std",
+]
