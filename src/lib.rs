@@ -22,6 +22,8 @@ use sp_fragnova::{
 	}
 };
 
+use protos::permissions::FragmentPerms;
+
 type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
 type AssetId = u64;
 
@@ -54,32 +56,30 @@ pub trait MyChainExtension {
 	type ErrorCode = MyChainExtensionError;
 
 	/// Get the `Proto` struct of the Proto-Fragment which has an ID of `proto_hash`
-	#[ink(extension = 0x0b01, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0b00, handle_status = false, returns_result = false)]
 	/// Get the list of Proto-Fragments that are owned by `owner`
 	fn get_proto(proto_hash: Hash256) -> Option<Proto<AccountId, BlockNumber>>;
-	#[ink(extension = 0x0b02, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0b01, handle_status = false, returns_result = false)]
 	fn get_proto_ids(owner: AccountId) -> Vec<Hash256>;
 
 	/// Get the `FragmentDefinition` struct of the Fragment Definition which has the ID of `definition_hash`
-	#[ink(extension = 0x0c01, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0c00, handle_status = false, returns_result = false)]
 	fn get_definition(definition_hash: Hash128) -> Option<FragmentDefinition<Vec<u8>, AssetId, AccountId, BlockNumber>>;
 	/// Get the `FragmentInstance` struct of the Fragment Instance whose Fragment Definition ID is `definition_hash`,
 	/// whose Edition ID is `edition_id` and whose Copy ID is `copy_id`
-	#[ink(extension = 0x0c02, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0c01, handle_status = false, returns_result = false)]
 	fn get_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit) -> Option<FragmentInstance<BlockNumber>>;
-	/// Get the list of Fragment Instances that are owned by `owner`
-	#[ink(extension = 0x0c03, handle_status = false, returns_result = false)]
-	fn get_instance_ids(owner: AccountId) -> Vec<(Hash128, InstanceUnit, InstanceUnit)>;
+	/// Get the list of Fragment Instances of the Fragment Definition `definition_hash` that are owned by `owner`
+	#[ink(extension = 0x0c02, handle_status = false, returns_result = false)]
+	fn get_instance_ids(definition_hash: Hash128, owner: AccountId) -> Vec<(InstanceUnit, InstanceUnit)>;
 	/// Give a Fragment Instance (that is owned by the smart contract) to `to`.
-	#[ink(extension = 0x0c04, returns_result = false)]
-	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId);
+	#[ink(extension = 0x0c03, returns_result = false)]
+	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId, new_permissions: Option<FragmentPerms>, expirations: Option<BlockNumber>);
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum MyChainExtensionError {
-	NotFound,
-	NoPermission,
 }
 
 impl From<scale::Error> for MyChainExtensionError {
@@ -100,8 +100,6 @@ impl ink_env::chain_extension::FromStatusCode for MyChainExtensionError {
 	fn from_status_code(status_code: u32) -> Result<(), Self> {
 		match status_code {
 			0 => Ok(()),
-			1 => Err(Self::NotFound),
-			2 => Err(Self::NoPermission),
 			_ => panic!("encountered unknown status code"),
 		}
 	}
