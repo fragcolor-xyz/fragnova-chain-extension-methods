@@ -21,7 +21,7 @@ protos = { version = "0.1.24", default-features = false }
 
 [lib]
 name = "fragnova_chain_extension_methods"
-path = "src/lib.rs"
+path = "lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
 	"cdylib",
