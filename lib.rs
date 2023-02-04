@@ -26,7 +26,7 @@ use protos::permissions::FragmentPerms;
 
 // These type must tally with the types in https://github.com/fragcolor-xyz/fragnova/blob/devel/runtime/src/lib.rs:
 type BlockNumber = u64; // pub type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
-type AssetId = u64;
+pub type AssetId = u64;
 
 /// `#[ink::chain_extension]` defines the interface for a chain extension.
 ///
