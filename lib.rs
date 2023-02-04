@@ -24,7 +24,8 @@ use sp_fragnova::{
 
 use protos::permissions::FragmentPerms;
 
-type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
+// These type must tally with the types in https://github.com/fragcolor-xyz/fragnova/blob/devel/runtime/src/lib.rs:
+type BlockNumber = u64; // pub type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
 type AssetId = u64;
 
 /// `#[ink::chain_extension]` defines the interface for a chain extension.
@@ -105,5 +106,22 @@ impl ink_env::chain_extension::FromStatusCode for MyChainExtensionError {
 	}
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+pub enum FragnovaEnvironment {}
+
+impl Environment for FragnovaEnvironment {
+	const MAX_EVENT_TOPICS: usize =
+		<DefaultEnvironment as Environment>::MAX_EVENT_TOPICS;
+
+	// These type must tally with the types in https://github.com/fragcolor-xyz/fragnova/blob/devel/runtime/src/lib.rs:
+	type AccountId = AccountId; // // Note: `ink_env::AccountId` is the exact same struct as `<DefaultEnvironment as Environment>::AccountId` and resolves to `AccountId32`
+	type Balance = <DefaultEnvironment as Environment>::Balance;
+	type Hash = <DefaultEnvironment as Environment>::Hash;
+	type BlockNumber = BlockNumber;
+	type Timestamp = <DefaultEnvironment as Environment>::Timestamp;
+
+	type ChainExtension = MyChainExtension;
+}
 
 
