@@ -43,7 +43,9 @@ pub type AssetId = u64;
 pub trait MyChainExtension {
 	/// Error codes of the chain extension.
 	///
-	/// By default (i.e unless both the `return_result` and `handle_status` attributes are `false`)
+	/// # Footnote:
+	///
+	/// By default (i.e unless both the `returns_result` and `handle_status` attributes are `false`)
 	/// all chain extension methods should return a `Result<T, E>` where `E: From<Self::ErrorCode>`.
 	/// The `Self::ErrorCode` represents the error code of the chain extension.
 	/// This means that a smart contract calling such a chain extension method first queries
@@ -53,9 +55,13 @@ pub trait MyChainExtension {
 	/// A chain extension method that is flagged with `handle_status = false` assumes that the returned error code will always indicate success.
 	/// Therefore it will always load and decode the output buffer and loses the `E: From<Self::ErrorCode>` constraint for the call.
 	///
-	/// Source: https://paritytech.github.io/ink/ink/attr.chain_extension.html
+	/// Note that if a chain extension method does not return `Result<T, E>` where `E: From<Self::ErrorCode>`, but `handle_status = true` it will still
+	/// return a value of type `Result<T, Self::ErrorCode>`.
+	///
+	/// Source: https://use.ink/macros-attributes/chain-extension#details-handle_status
 	type ErrorCode = MyChainExtensionError;
 
+	// Chain extension methods that access the protos pallet are prefixied with 0x0b (this is the same number as the pallet's index)
 	/// Get the `Proto` struct of the Proto-Fragment which has an ID of `proto_hash`
 	#[ink(extension = 0x0b00, handle_status = false, returns_result = false)]
 	/// Get the list of Proto-Fragments that are owned by `owner`
@@ -63,6 +69,7 @@ pub trait MyChainExtension {
 	#[ink(extension = 0x0b01, handle_status = false, returns_result = false)]
 	fn get_proto_ids(owner: AccountId) -> Vec<Hash256>;
 
+	// Chain extension methods that access the fragments pallet are prefixied with 0x0c (this is the same number as the pallet's index)
 	/// Get the `FragmentDefinition` struct of the Fragment Definition which has the ID of `definition_hash`
 	#[ink(extension = 0x0c00, handle_status = false, returns_result = false)]
 	fn get_definition(definition_hash: Hash128) -> Option<FragmentDefinition<Vec<u8>, AssetId, AccountId, BlockNumber>>;
@@ -74,8 +81,8 @@ pub trait MyChainExtension {
 	#[ink(extension = 0x0c02, handle_status = false, returns_result = false)]
 	fn get_instance_ids(definition_hash: Hash128, owner: AccountId) -> Vec<(InstanceUnit, InstanceUnit)>;
 	/// Give a Fragment Instance (that is owned by the smart contract) to `to`.
-	#[ink(extension = 0x0c03, returns_result = false)]
-	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId, new_permissions: Option<FragmentPerms>, expirations: Option<BlockNumber>);
+	#[ink(extension = 0x0c03)]
+	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId, new_permissions: Option<FragmentPerms>, expirations: Option<BlockNumber>) -> Result<(), MyChainExtensionError>;
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
