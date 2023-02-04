@@ -35,4 +35,6 @@ std = [
 	"scale/std",
 	"scale-info/std",
 	"sp-fragnova/std",
+	"sp-io/std",
+	"protos/std",
 ]
