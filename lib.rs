@@ -9,6 +9,8 @@ use ink_lang as ink;
 use ink_env::{AccountId, Environment, DefaultEnvironment};
 use ink_prelude::vec::Vec;
 
+use scale::Compact;
+
 use sp_fragnova::{
 	Hash128,
 	Hash256,
@@ -79,7 +81,7 @@ pub trait MyChainExtension {
 	fn get_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit) -> Option<FragmentInstance<BlockNumber>>;
 	/// Get the list of Fragment Instances of the Fragment Definition `definition_hash` that are owned by `owner`
 	#[ink(extension = 0x0c02, handle_status = false, returns_result = false)]
-	fn get_instance_ids(definition_hash: Hash128, owner: AccountId) -> Vec<(InstanceUnit, InstanceUnit)>;
+	fn get_instance_ids(definition_hash: Hash128, owner: AccountId) -> Vec<(Compact<InstanceUnit>, Compact<InstanceUnit>)>;
 	/// Give a Fragment Instance (that is owned by the smart contract) to `to`.
 	#[ink(extension = 0x0c03)]
 	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId, new_permissions: Option<FragmentPerms>, expirations: Option<BlockNumber>) -> Result<(), MyChainExtensionError>;
