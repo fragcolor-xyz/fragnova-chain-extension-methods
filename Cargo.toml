@@ -13,7 +13,7 @@ ink_prelude = { version = "3.3", default-features = false }
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] } # this package is named "codec" when used in Fragnova (https://github.com/fragcolor-xyz/fragnova)
 scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
 
-sp-fragnova = { version = '0.1.0', default-features = false, git = 'https://github.com/fragcolor-xyz/fragnova.git', branch = 'implement-maxencodedlen-trait-for-fragmentperms' }
+sp-fragnova = { version = '0.1.0', default-features = false, git = 'https://github.com/fragcolor-xyz/fragnova.git', branch = 'add-chain-extension' }
 # We use this dependency to prevent the error "`#[global_allocator]` in ink_allocator conflicts with global allocator in: sp_io". This solution was found from https://substrate.stackexchange.com/questions/4733/error-when-compiling-a-contract-using-the-xcm-chain-extension
 sp-io = { version = '6.0.0', default-features = false, features = ["disable_panic_handler", "disable_oom", "disable_allocator"], git = 'https://github.com/fragcolor-xyz/substrate.git', tag = 'fragnova-v0.0.6' }
 
