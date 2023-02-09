@@ -4,6 +4,7 @@ description = "Definitions of all the Chain Extension Methods of the Fragnova Bl
 version = "0.1.0"
 authors = ["Fragcolor Pte. Ltd. <ask@fragcolor.com>"]
 edition = "2021"
+license = "BSD-3-Clause"
 
 [dependencies]
 ink_env = { version = "3.3", default-features = false }
