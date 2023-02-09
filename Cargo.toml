@@ -1,5 +1,5 @@
 [package]
-name = "fragnova_chain_extension_methods"
+name = "fragnova_extensions"
 description = "Definitions of all the Chain Extension Methods of the Fragnova Blockchain. Fragnova ink! smart contract developers should integrate these method definitons into the environment of their smart contracts (https://paritytech.github.io/ink/ink/attr.chain_extension.html#example-environment), if they wish to call these methods in their smart contracts."
 version = "0.1.0"
 authors = ["Fragcolor Pte. Ltd. <ask@fragcolor.com>"]
@@ -20,7 +20,7 @@ sp-io = { version = '6.0.0', default-features = false, features = ["disable_pani
 protos = { version = "0.1.26", default-features = false, git = 'https://github.com/fragcolor-xyz/protos.git', branch = 'implement-maxencodedlen-trait-for-fragmentperms' }
 
 [lib]
-name = "fragnova_chain_extension_methods"
+name = "fragnova_extensions"
 path = "lib.rs"
 crate-type = [
 	# Used for normal contract Wasm blobs.
