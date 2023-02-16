@@ -66,8 +66,8 @@ pub trait MyChainExtension {
 	// Chain extension methods that access the protos pallet are prefixied with 0x0b (this is the same number as the pallet's index)
 	/// Get the `Proto` struct of the Proto-Fragment which has an ID of `proto_hash`
 	#[ink(extension = 0x0b00, handle_status = false, returns_result = false)]
-	/// Get the list of Proto-Fragments that are owned by `owner`
 	fn get_proto(proto_hash: Hash256) -> Option<Proto<AccountId, BlockNumber>>;
+	/// Get the list of Proto-Fragments that are owned by `owner`
 	#[ink(extension = 0x0b01, handle_status = false, returns_result = false)]
 	fn get_proto_ids(owner: AccountId) -> Vec<Hash256>;
 
