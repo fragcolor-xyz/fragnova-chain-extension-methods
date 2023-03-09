@@ -19,11 +19,6 @@ ink_e2e = "4.0.1"
 
 [lib]
 path = "lib.rs"
-#crate-type = [
-#	# Used for normal contract Wasm blobs.
-#	"cdylib",
-#	"rlib",
-#]
 
 [features]
 default = ["std"]
