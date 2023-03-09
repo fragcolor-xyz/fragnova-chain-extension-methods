@@ -1,16 +1,13 @@
 //! This crate contains the definitions of all the chain extension methods of the Fragnova Blockchain.
 //!
-//! Fragnova ink! smart contract developers should integrate these method definitons into the environment of their smart contracts (https://paritytech.github.io/ink/ink/attr.chain_extension.html#example-environment),
+//! Fragnova ink! smart contract developers should integrate these method definitions into the environment of their smart contracts (https://paritytech.github.io/ink/ink/attr.chain_extension.html#example-environment),
 //! if they wish to call these methods in their smart contracts.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink_lang as ink;
-use ink_env::{AccountId, Environment, DefaultEnvironment};
-use ink_prelude::vec::Vec;
-
+use ink::env::Environment;
+use ink::prelude::vec::Vec;
 use scale::Compact;
-
 use sp_fragnova::{
 	Hash128,
 	Hash256,
@@ -23,11 +20,11 @@ use sp_fragnova::{
 		InstanceUnit
 	}
 };
-
 use protos::permissions::FragmentPerms;
 
 // These type must tally with the types in https://github.com/fragcolor-xyz/fragnova/blob/devel/runtime/src/lib.rs:
-type BlockNumber = u64; // pub type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
+type AccountId = <ink::env::DefaultEnvironment as Environment>::AccountId;
+type BlockNumber = u64; // type BlockNumber = <ink::env::DefaultEnvironment as Environment>::BlockNumber;
 pub type AssetId = u64;
 
 /// `#[ink::chain_extension]` defines the interface for a chain extension.
@@ -47,7 +44,7 @@ pub trait MyChainExtension {
 	///
 	/// # Footnote:
 	///
-	/// By default (i.e unless both the `returns_result` and `handle_status` attributes are `false`)
+	/// By default (i.e unless the `handle_status` attribute is `false`)
 	/// all chain extension methods should return a `Result<T, E>` where `E: From<Self::ErrorCode>`.
 	/// The `Self::ErrorCode` represents the error code of the chain extension.
 	/// This means that a smart contract calling such a chain extension method first queries
@@ -60,42 +57,37 @@ pub trait MyChainExtension {
 	/// Note that if a chain extension method does not return `Result<T, E>` where `E: From<Self::ErrorCode>`, but `handle_status = true` it will still
 	/// return a value of type `Result<T, Self::ErrorCode>`.
 	///
-	/// Source: https://use.ink/macros-attributes/chain-extension#details-handle_status
+	/// Source: https://paritytech.github.io/ink/ink/attr.chain_extension.html#details-handle_status
 	type ErrorCode = MyChainExtensionError;
 
 	// Chain extension methods that access the protos pallet are prefixied with 0x0b (this is the same number as the pallet's index)
 	/// Get the `Proto` struct of the Proto-Fragment which has an ID of `proto_hash`
-	#[ink(extension = 0x0b00, handle_status = false, returns_result = false)]
-	/// Get the list of Proto-Fragments that are owned by `owner`
+	#[ink(extension = 0x0b00, handle_status = false)]
 	fn get_proto(proto_hash: Hash256) -> Option<Proto<AccountId, BlockNumber>>;
-	#[ink(extension = 0x0b01, handle_status = false, returns_result = false)]
+	/// Get the list of Proto-Fragments that are owned by `owner`
+	#[ink(extension = 0x0b01, handle_status = false)]
 	fn get_proto_ids(owner: AccountId) -> Vec<Hash256>;
 
 	// Chain extension methods that access the fragments pallet are prefixied with 0x0c (this is the same number as the pallet's index)
 	/// Get the `FragmentDefinition` struct of the Fragment Definition which has the ID of `definition_hash`
-	#[ink(extension = 0x0c00, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0c00, handle_status = false)]
 	fn get_definition(definition_hash: Hash128) -> Option<FragmentDefinition<Vec<u8>, AssetId, AccountId, BlockNumber>>;
 	/// Get the `FragmentInstance` struct of the Fragment Instance whose Fragment Definition ID is `definition_hash`,
 	/// whose Edition ID is `edition_id` and whose Copy ID is `copy_id`
-	#[ink(extension = 0x0c01, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0c01, handle_status = false)]
 	fn get_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit) -> Option<FragmentInstance<BlockNumber>>;
 	/// Get the list of Fragment Instances of the Fragment Definition `definition_hash` that are owned by `owner`
-	#[ink(extension = 0x0c02, handle_status = false, returns_result = false)]
+	#[ink(extension = 0x0c02, handle_status = false)]
 	fn get_instance_ids(definition_hash: Hash128, owner: AccountId) -> Vec<(Compact<InstanceUnit>, Compact<InstanceUnit>)>;
 	/// Give a Fragment Instance (that is owned by the smart contract) to `to`.
 	#[ink(extension = 0x0c03)]
 	fn give_instance(definition_hash: Hash128, edition_id: InstanceUnit, copy_id: InstanceUnit, to: AccountId, new_permissions: Option<FragmentPerms>, expirations: Option<BlockNumber>) -> Result<(), MyChainExtensionError>;
 }
 
+/// The error codes of the chain extension `MyChainExtension`
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum MyChainExtensionError {
-}
-
-impl From<scale::Error> for MyChainExtensionError {
-	fn from(_: scale::Error) -> Self {
-		panic!("encountered unexpected invalid SCALE encoding")
-	}
 }
 
 /// The defined `ErrorCode` must implement `FromStatusCode` which should be implemented as a
@@ -106,12 +98,18 @@ impl From<scale::Error> for MyChainExtensionError {
 /// However, chain extension authors may use whatever suits their needs.
 ///
 /// Source: https://paritytech.github.io/ink/ink/attr.chain_extension.html#error-code
-impl ink_env::chain_extension::FromStatusCode for MyChainExtensionError {
+impl ink::env::chain_extension::FromStatusCode for MyChainExtensionError {
 	fn from_status_code(status_code: u32) -> Result<(), Self> {
 		match status_code {
 			0 => Ok(()),
 			_ => panic!("encountered unknown status code"),
 		}
+	}
+}
+
+impl From<scale::Error> for MyChainExtensionError {
+	fn from(_: scale::Error) -> Self {
+		panic!("encountered unexpected invalid SCALE encoding")
 	}
 }
 
@@ -121,14 +119,14 @@ pub enum FragnovaEnvironment {}
 
 impl Environment for FragnovaEnvironment {
 	const MAX_EVENT_TOPICS: usize =
-		<DefaultEnvironment as Environment>::MAX_EVENT_TOPICS;
+		<ink::env::DefaultEnvironment as Environment>::MAX_EVENT_TOPICS;
 
 	// These type must tally with the types in https://github.com/fragcolor-xyz/fragnova/blob/devel/runtime/src/lib.rs:
-	type AccountId = AccountId; // // Note: `ink_env::AccountId` is the exact same struct as `<DefaultEnvironment as Environment>::AccountId` and resolves to `AccountId32`
-	type Balance = <DefaultEnvironment as Environment>::Balance;
-	type Hash = <DefaultEnvironment as Environment>::Hash;
+	type AccountId = AccountId;
+	type Balance = <ink::env::DefaultEnvironment as Environment>::Balance;
+	type Hash = <ink::env::DefaultEnvironment as Environment>::Hash;
 	type BlockNumber = BlockNumber;
-	type Timestamp = <DefaultEnvironment as Environment>::Timestamp;
+	type Timestamp = <ink::env::DefaultEnvironment as Environment>::Timestamp;
 
 	type ChainExtension = MyChainExtension;
 }
